@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Get Motivated</title>
+  <meta name="description" content="Hard-hitting motivational quotes. One at a time.">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      background: #0a0a0a;
+      color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+      cursor: pointer;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(ellipse at center, #141414 0%, #0a0a0a 70%);
+    }
+
+    #quote {
+      font-size: clamp(1.8rem, 6vw, 4.2rem);
+      font-weight: 700;
+      line-height: 1.2;
+      letter-spacing: -0.03em;
+      text-align: center;
+      max-width: 90vw;
+      padding: 2rem;
+      opacity: 1;
+      transition: opacity 0.35s ease;
+    }
+
+    #quote.fade {
+      opacity: 0;
+    }
+
+    #next {
+      position: fixed;
+      bottom: 2.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.85rem;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.35);
+      opacity: 0;
+      transition: opacity 0.6s ease;
+      pointer-events: none;
+    }
+
+    #next.visible {
+      opacity: 1;
+    }
+
+    @media (max-width: 600px) {
+      #quote {
+        font-size: clamp(1.6rem, 7.5vw, 2.8rem);
+        padding: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="quote"></div>
+  <div id="next">Next</div>
+
+  <script>
+    const quotes = [
+      "Stop waiting for motivation. Start moving.",
+      "Most people quit right before it starts working.",
+      "Your future self is watching. Don’t disappoint them.",
+      "Discipline is choosing what you want most over what you want now.",
+      "Comfort is the enemy of progress.",
+      "You don’t need more time. You need more intensity.",
+      "The work is the shortcut.",
+      "Nobody is coming to save you.",
+      "Excuses feel good in the moment. Results feel better later.",
+      "Do it scared. Do it tired. Do it anyway.",
+      "Soft goals create soft people.",
+      "Pain is temporary. Quitting lasts.",
+      "The only thing standing between you and what you want is the story you keep telling yourself.",
+      "Action cures fear.",
+      "You are not behind. You are distracted.",
+      "Consistency beats intensity when intensity is inconsistent.",
+      "Stop romanticizing the struggle. Just do the work.",
+      "Your standards are too low. Raise them.",
+      "The gap between who you are and who you want to be is closed by daily action.",
+      "Motivation gets you started. Discipline keeps you going.",
+      "Be harder to kill.",
+      "The world doesn’t care about your potential. It cares about your output.",
+      "Delayed gratification is a superpower.",
+      "You will never feel ready. Start anyway.",
+      "Weakness is a choice. So is strength.",
+      "The people who win are the ones who keep going when it feels pointless.",
+      "Stop looking for the easy way. There isn’t one.",
+      "Your comfort zone is a beautiful place, but nothing grows there.",
+      "Make your future self proud.",
+      "The work you avoid is the work that will change everything.",
+      "Ambition without action is just a daydream.",
+      "You can’t think your way into a new life. You have to act your way into it.",
+      "Pressure is a privilege.",
+      "Become the person who does hard things on purpose.",
+      "Every day you waste is a day your competition doesn’t.",
+      "The only bad workout is the one that didn’t happen.",
+      "Stop negotiating with your excuses.",
+      "Greatness is boring. It’s the same hard things done daily.",
+      "You don’t rise to the level of your goals. You fall to the level of your systems.",
+      "The version of you that you want is built in the moments you least feel like building it."
+    ];
+
+    let current = Math.floor(Math.random() * quotes.length);
+    const quoteEl = document.getElementById('quote');
+    const nextEl = document.getElementById('next');
+    let fadeTimeout;
+
+    function showQuote(index) {
+      quoteEl.classList.add('fade');
+      setTimeout(() => {
+        quoteEl.textContent = quotes[index];
+        quoteEl.classList.remove('fade');
+      }, 180);
+    }
+
+    function nextQuote() {
+      current = (current + 1) % quotes.length;
+      showQuote(current);
+      showNextIndicator();
+    }
+
+    function showNextIndicator() {
+      nextEl.classList.add('visible');
+      clearTimeout(fadeTimeout);
+      fadeTimeout = setTimeout(() => {
+        nextEl.classList.remove('visible');
+      }, 3500);
+    }
+
+    // Initial
+    quoteEl.textContent = quotes[current];
+    showNextIndicator();
+
+    // Interactions
+    document.body.addEventListener('click', nextQuote);
+    document.body.addEventListener('keydown', (e) => {
+      if (e.code === 'Space' || e.code === 'ArrowRight') {
+        e.preventDefault();
+        nextQuote();
+      }
+    });
+
+    // Touch swipe left
+    let touchStartX = 0;
+    document.body.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    document.body.addEventListener('touchend', (e) => {
+      const touchEndX = e.changedTouches[0].screenX;
+      if (touchStartX - touchEndX > 60) {
+        nextQuote();
+      }
+    }, { passive: true });
+
+    // Show indicator on mouse move
+    document.body.addEventListener('mousemove', () => {
+      showNextIndicator();
+    });
+  </script>
+</body>
+</html>
