@@ -2,9 +2,16 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Get Motivated</title>
   <meta name="description" content="Hard-hitting motivational quotes. One at a time.">
+  <meta name="theme-color" content="#0a0a0a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Motivated">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/logo.svg">
   <style>
     * {
       margin: 0;
@@ -25,9 +32,19 @@
 
     body {
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       background: radial-gradient(ellipse at center, #141414 0%, #0a0a0a 70%);
+      gap: 2.5rem;
+      padding: 2rem 1rem;
+    }
+
+    #logo {
+      width: 72px;
+      height: auto;
+      opacity: 0.95;
+      flex-shrink: 0;
     }
 
     #quote {
@@ -37,7 +54,6 @@
       letter-spacing: -0.03em;
       text-align: center;
       max-width: 90vw;
-      padding: 2rem;
       opacity: 1;
       transition: opacity 0.35s ease;
     }
@@ -66,14 +82,24 @@
     }
 
     @media (max-width: 600px) {
+      #logo {
+        width: 56px;
+      }
       #quote {
         font-size: clamp(1.6rem, 7.5vw, 2.8rem);
-        padding: 1.5rem;
+      }
+      body {
+        gap: 2rem;
       }
     }
   </style>
 </head>
 <body>
+  <svg id="logo" viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg" aria-label="Get Motivated">
+    <path fill="#ffffff" d="M10 120 L45 50 L70 90 L100 20 L130 90 L155 50 L190 120 L155 120 L130 70 L100 110 L70 70 L45 120 Z"/>
+    <path fill="#0a0a0a" d="M85 75 L100 45 L115 75 L100 105 Z"/>
+  </svg>
+
   <div id="quote"></div>
   <div id="next">Next</div>
 
@@ -178,6 +204,13 @@
     document.body.addEventListener('mousemove', () => {
       showNextIndicator();
     });
+
+    // Register service worker for PWA
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(() => {});
+      });
+    }
   </script>
 </body>
 </html>
