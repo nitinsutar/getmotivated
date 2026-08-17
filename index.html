@@ -265,17 +265,7 @@
         logo.src = '/logo.png';
       });
 
-      // Draw logo (centered near top)
-      const logoSize = 140;
-      const logoX = (W - logoSize) / 2;
-      const logoY = 380;
-      ctx.drawImage(logo, logoX, logoY, logoSize, logoSize * (logo.height / logo.width));
-
-      // Draw quote text
       const text = quotes[current];
-      ctx.fillStyle = '#ffffff';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
 
       // Responsive font size based on quote length
       let fontSize = 64;
@@ -284,6 +274,9 @@
       if (text.length > 140) fontSize = 38;
 
       ctx.font = `700 ${fontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#ffffff';
 
       // Word wrap
       const maxWidth = W * 0.78;
@@ -303,17 +296,27 @@
       }
       if (currentLine) lines.push(currentLine);
 
-      // Vertical center the text block under the logo
       const totalTextHeight = lines.length * lineHeight;
-      let textY = logoY + logoSize + 120 + (totalTextHeight / 2);
+      const logoSize = 140;
+      const logoHeight = logoSize * (logo.height / logo.width);
+      const gap = 100; // space between logo and text
 
-      // Adjust if too low
-      if (textY + totalTextHeight / 2 > H - 200) {
-        textY = H / 2 + 40;
-      }
+      // Total content height (logo + gap + text)
+      const contentHeight = logoHeight + gap + totalTextHeight;
+
+      // Center the whole block vertically
+      const startY = (H - contentHeight) / 2;
+
+      // Draw logo
+      const logoX = (W - logoSize) / 2;
+      const logoY = startY;
+      ctx.drawImage(logo, logoX, logoY, logoSize, logoHeight);
+
+      // Draw text
+      const textStartY = startY + logoHeight + gap;
 
       lines.forEach((line, i) => {
-        const y = textY - (totalTextHeight / 2) + (i * lineHeight) + (lineHeight / 2);
+        const y = textStartY + (i * lineHeight) + (lineHeight / 2);
         ctx.fillText(line, W / 2, y);
       });
 
