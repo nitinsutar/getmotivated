@@ -21,13 +21,65 @@
     #quote.fade { opacity: 0; }
     #next { position: fixed; bottom: 2.5rem; left: 50%; transform: translateX(-50%); font-size: 0.85rem; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255, 255, 255, 0.35); opacity: 0; transition: opacity 0.6s ease; pointer-events: none; }
     #next.visible { opacity: 1; }
-    @media (max-width: 600px) { #logo { width: 60px; } #quote { font-size: clamp(1.6rem, 7.5vw, 2.8rem); } body { gap: 2rem; } }
+
+    /* Share button */
+    #share {
+      position: fixed;
+      bottom: 2.4rem;
+      right: 1.8rem;
+      width: 42px;
+      height: 42px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.7s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #share.visible {
+      opacity: 0.45;
+    }
+    #share:hover {
+      opacity: 0.9 !important;
+    }
+    #share svg {
+      width: 22px;
+      height: 22px;
+      fill: #ffffff;
+    }
+
+    @media (max-width: 600px) {
+      #logo { width: 60px; }
+      #quote { font-size: clamp(1.6rem, 7.5vw, 2.8rem); }
+      body { gap: 2rem; }
+      #share {
+        bottom: 2.2rem;
+        right: 1.4rem;
+        width: 40px;
+        height: 40px;
+      }
+      #share svg {
+        width: 20px;
+        height: 20px;
+      }
+    }
   </style>
 </head>
 <body>
   <img id="logo" src="/logo.png" alt="Get Motivated">
   <div id="quote"></div>
   <div id="next">Next</div>
+
+  <button id="share" aria-label="Share quote" title="Share">
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92c0-1.61-1.31-2.92-2.92-2.92z"/>
+    </svg>
+  </button>
+
   <script>
     const quotes = [
       "Stop waiting for motivation. Start moving.",
@@ -100,18 +152,211 @@
     let current = Math.floor(Math.random() * quotes.length);
     const quoteEl = document.getElementById('quote');
     const nextEl = document.getElementById('next');
+    const shareBtn = document.getElementById('share');
     let fadeTimeout;
-    function showQuote(index) { quoteEl.classList.add('fade'); setTimeout(() => { quoteEl.textContent = quotes[index]; quoteEl.classList.remove('fade'); }, 180); }
-    function nextQuote() { current = (current + 1) % quotes.length; showQuote(current); showNextIndicator(); }
-    function showNextIndicator() { nextEl.classList.add('visible'); clearTimeout(fadeTimeout); fadeTimeout = setTimeout(() => { nextEl.classList.remove('visible'); }, 3500); }
-    quoteEl.textContent = quotes[current]; showNextIndicator();
-    document.body.addEventListener('click', nextQuote);
-    document.body.addEventListener('keydown', (e) => { if (e.code === 'Space' || e.code === 'ArrowRight') { e.preventDefault(); nextQuote(); } });
+    let shareFadeTimeout;
+
+    function showQuote(index) {
+      quoteEl.classList.add('fade');
+      setTimeout(() => {
+        quoteEl.textContent = quotes[index];
+        quoteEl.classList.remove('fade');
+      }, 180);
+    }
+
+    function nextQuote() {
+      current = (current + 1) % quotes.length;
+      showQuote(current);
+      showNextIndicator();
+    }
+
+    function showNextIndicator() {
+      nextEl.classList.add('visible');
+      shareBtn.classList.add('visible');
+      clearTimeout(fadeTimeout);
+      clearTimeout(shareFadeTimeout);
+      fadeTimeout = setTimeout(() => {
+        nextEl.classList.remove('visible');
+      }, 3500);
+      shareFadeTimeout = setTimeout(() => {
+        shareBtn.classList.remove('visible');
+      }, 3500);
+    }
+
+    // Initial
+    quoteEl.textContent = quotes[current];
+    showNextIndicator();
+
+    // Interactions
+    document.body.addEventListener('click', (e) => {
+      if (e.target.closest('#share')) return;
+      nextQuote();
+    });
+
+    document.body.addEventListener('keydown', (e) => {
+      if (e.code === 'Space' || e.code === 'ArrowRight') {
+        e.preventDefault();
+        nextQuote();
+      }
+    });
+
     let touchStartX = 0;
-    document.body.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].screenX; }, { passive: true });
-    document.body.addEventListener('touchend', (e) => { const touchEndX = e.changedTouches[0].screenX; if (touchStartX - touchEndX > 60) { nextQuote(); } }, { passive: true });
-    document.body.addEventListener('mousemove', () => { showNextIndicator(); });
-    if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js').catch(() => {}); }); }
+    document.body.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    document.body.addEventListener('touchend', (e) => {
+      const touchEndX = e.changedTouches[0].screenX;
+      if (touchStartX - touchEndX > 60) {
+        nextQuote();
+      }
+    }, { passive: true });
+
+    document.body.addEventListener('mousemove', () => {
+      showNextIndicator();
+    });
+
+    // ========== SHARE FEATURE ==========
+    async function generateQuoteImage() {
+      const W = 1080;
+      const H = 1920;
+      const canvas = document.createElement('canvas');
+      canvas.width = W;
+      canvas.height = H;
+      const ctx = canvas.getContext('2d');
+
+      // Background
+      const gradient = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, H * 0.7);
+      gradient.addColorStop(0, '#141414');
+      gradient.addColorStop(1, '#0a0a0a');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, W, H);
+
+      // Load logo
+      const logo = new Image();
+      logo.crossOrigin = 'anonymous';
+      await new Promise((resolve, reject) => {
+        logo.onload = resolve;
+        logo.onerror = reject;
+        logo.src = '/logo.png';
+      });
+
+      // Draw logo (centered near top)
+      const logoSize = 140;
+      const logoX = (W - logoSize) / 2;
+      const logoY = 380;
+      ctx.drawImage(logo, logoX, logoY, logoSize, logoSize * (logo.height / logo.width));
+
+      // Draw quote text
+      const text = quotes[current];
+      ctx.fillStyle = '#ffffff';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      // Responsive font size based on quote length
+      let fontSize = 64;
+      if (text.length > 80) fontSize = 52;
+      if (text.length > 110) fontSize = 44;
+      if (text.length > 140) fontSize = 38;
+
+      ctx.font = `700 ${fontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif`;
+
+      // Word wrap
+      const maxWidth = W * 0.78;
+      const lineHeight = fontSize * 1.25;
+      const words = text.split(' ');
+      const lines = [];
+      let currentLine = '';
+
+      for (const word of words) {
+        const test = currentLine ? currentLine + ' ' + word : word;
+        if (ctx.measureText(test).width > maxWidth) {
+          lines.push(currentLine);
+          currentLine = word;
+        } else {
+          currentLine = test;
+        }
+      }
+      if (currentLine) lines.push(currentLine);
+
+      // Vertical center the text block under the logo
+      const totalTextHeight = lines.length * lineHeight;
+      let textY = logoY + logoSize + 120 + (totalTextHeight / 2);
+
+      // Adjust if too low
+      if (textY + totalTextHeight / 2 > H - 200) {
+        textY = H / 2 + 40;
+      }
+
+      lines.forEach((line, i) => {
+        const y = textY - (totalTextHeight / 2) + (i * lineHeight) + (lineHeight / 2);
+        ctx.fillText(line, W / 2, y);
+      });
+
+      return canvas;
+    }
+
+    async function shareQuote(e) {
+      e.stopPropagation();
+      e.preventDefault();
+
+      try {
+        const canvas = await generateQuoteImage();
+        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png', 1.0));
+
+        // Mobile: native share sheet
+        if (navigator.share && navigator.canShare) {
+          const file = new File([blob], 'motivation.png', { type: 'image/png' });
+          if (navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              files: [file],
+              title: 'Get Motivated'
+            });
+            return;
+          }
+        }
+
+        // Desktop / fallback: download
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'motivation.png';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } catch (err) {
+        console.error('Share failed:', err);
+        // Fallback download
+        try {
+          const canvas = await generateQuoteImage();
+          const url = canvas.toDataURL('image/png');
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'motivation.png';
+          a.click();
+        } catch (e2) {}
+      }
+    }
+
+    shareBtn.addEventListener('click', shareQuote);
+
+    // Keep share visible a bit longer on hover
+    shareBtn.addEventListener('mouseenter', () => {
+      clearTimeout(shareFadeTimeout);
+      shareBtn.classList.add('visible');
+    });
+    shareBtn.addEventListener('mouseleave', () => {
+      shareFadeTimeout = setTimeout(() => {
+        shareBtn.classList.remove('visible');
+      }, 1800);
+    });
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(() => {});
+      });
+    }
   </script>
 
   <!-- Vercel Analytics -->
