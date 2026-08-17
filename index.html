@@ -41,15 +41,22 @@
       -webkit-tap-highlight-color: transparent;
     }
     #share.visible {
-      opacity: 0.45;
+      opacity: 0.55;
     }
     #share:hover {
-      opacity: 0.9 !important;
+      opacity: 0.95 !important;
     }
     #share svg {
       width: 22px;
       height: 22px;
       fill: #ffffff;
+    }
+
+    /* Always show share button on touch devices */
+    @media (hover: none) and (pointer: coarse) {
+      #share {
+        opacity: 0.5 !important;
+      }
     }
 
     @media (max-width: 600px) {
@@ -59,12 +66,13 @@
       #share {
         bottom: 2.2rem;
         right: 1.4rem;
-        width: 40px;
-        height: 40px;
+        width: 44px;
+        height: 44px;
+        opacity: 0.5;
       }
       #share svg {
-        width: 20px;
-        height: 20px;
+        width: 22px;
+        height: 22px;
       }
     }
   </style>
@@ -156,6 +164,9 @@
     let fadeTimeout;
     let shareFadeTimeout;
 
+    // Detect touch device
+    const isTouchDevice = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+
     function showQuote(index) {
       quoteEl.classList.add('fade');
       setTimeout(() => {
@@ -172,20 +183,29 @@
 
     function showNextIndicator() {
       nextEl.classList.add('visible');
-      shareBtn.classList.add('visible');
+      if (!isTouchDevice) {
+        shareBtn.classList.add('visible');
+      }
       clearTimeout(fadeTimeout);
       clearTimeout(shareFadeTimeout);
       fadeTimeout = setTimeout(() => {
         nextEl.classList.remove('visible');
       }, 3500);
-      shareFadeTimeout = setTimeout(() => {
-        shareBtn.classList.remove('visible');
-      }, 3500);
+      if (!isTouchDevice) {
+        shareFadeTimeout = setTimeout(() => {
+          shareBtn.classList.remove('visible');
+        }, 3500);
+      }
     }
 
     // Initial
     quoteEl.textContent = quotes[current];
     showNextIndicator();
+
+    // On touch devices, keep share always visible
+    if (isTouchDevice) {
+      shareBtn.classList.add('visible');
+    }
 
     // Interactions
     document.body.addEventListener('click', (e) => {
@@ -213,7 +233,7 @@
     }, { passive: true });
 
     document.body.addEventListener('mousemove', () => {
-      showNextIndicator();
+      if (!isTouchDevice) showNextIndicator();
     });
 
     // ========== SHARE FEATURE ==========
@@ -341,15 +361,19 @@
 
     shareBtn.addEventListener('click', shareQuote);
 
-    // Keep share visible a bit longer on hover
+    // Keep share visible a bit longer on hover (desktop only)
     shareBtn.addEventListener('mouseenter', () => {
-      clearTimeout(shareFadeTimeout);
-      shareBtn.classList.add('visible');
+      if (!isTouchDevice) {
+        clearTimeout(shareFadeTimeout);
+        shareBtn.classList.add('visible');
+      }
     });
     shareBtn.addEventListener('mouseleave', () => {
-      shareFadeTimeout = setTimeout(() => {
-        shareBtn.classList.remove('visible');
-      }, 1800);
+      if (!isTouchDevice) {
+        shareFadeTimeout = setTimeout(() => {
+          shareBtn.classList.remove('visible');
+        }, 1800);
+      }
     });
 
     if ('serviceWorker' in navigator) {
